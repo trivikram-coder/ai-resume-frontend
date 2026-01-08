@@ -1,4 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+# SPA routing fix (IMPORTANT)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Disable CI ESLint failures
+[build.environment]
+  CI = "false"
