@@ -255,7 +255,7 @@ export default function UploadResume() {
         {/* Role/Job Target Input */}
         <div className="upload-form-section">
           <label className="upload-label">
-            Target role or job description <span className="upload-label-optional">(optional)</span>
+            Target role or job description <span style={{color:"red"}}>(*)</span>
           </label>
           <textarea
             className="upload-textarea"
