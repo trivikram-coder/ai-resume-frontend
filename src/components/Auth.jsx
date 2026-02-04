@@ -9,7 +9,7 @@ export default function Auth() {
   const [activeTab, setActiveTab] = useState(isRegister ? "register" : "login");
   
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [registerForm, setRegisterForm] = useState({ fullName: "", email: "", password: "" });
+  const [registerForm, setRegisterForm] = useState({ userName: "", email: "", password: "" });
   
   const [loginMessage, setLoginMessage] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -164,7 +164,7 @@ export default function Auth() {
                   type="text"
                   placeholder="Taylor Jackson"
                   value={registerForm.fullName}
-                  onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
+                  onChange={(e) => setRegisterForm({ ...registerForm, userName: e.target.value })}
                   required
                 />
               </div>
