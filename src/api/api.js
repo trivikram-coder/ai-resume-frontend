@@ -15,7 +15,9 @@ export async function loginUser(data) {
     body: JSON.stringify(data)
   }).then(res => res.json());
 }
-
+export  function getUser(email) {
+  return fetch(`${BASE_URL}/auth/user?email=${email}`)
+}
 export async function uploadResume(email, file, description) {
   const formData = new FormData();
   formData.append("file", file);

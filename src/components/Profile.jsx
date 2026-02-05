@@ -4,16 +4,18 @@ import { getReports } from "../api/api";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const email = localStorage.getItem("email");
+
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const email = storedUser?.email || localStorage.getItem("email");
+
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
+
   const [reports, setReports] = useState([]);
   const [reportsLoading, setReportsLoading] = useState(true);
 
-  // Form state
   const [formData, setFormData] = useState({
     displayName: "",
     email: email || "",
@@ -22,55 +24,64 @@ export default function Profile() {
     emailNotifications: true,
   });
 
-  // Form errors
   const [errors, setErrors] = useState({});
 
+  /* ================= INIT ================= */
   useEffect(() => {
     if (!email) {
       navigate("/");
       return;
     }
 
-    // Initialize form data
-    const username = email.split("@")[0];
+    const nameFromUser =
+      storedUser?.userName ||
+      storedUser?.name ||
+      localStorage.getItem("displayName");
+
+    const fallbackName = email.split("@")[0];
+
     setFormData({
-      displayName: username.charAt(0).toUpperCase() + username.slice(1),
-      email: email,
-      phone: "",
+      displayName:
+        nameFromUser ||
+        fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1),
+      email,
+      phone: localStorage.getItem("phone") || "",
       theme: localStorage.getItem("theme") || "light",
-      emailNotifications: localStorage.getItem("emailNotifications") !== "false",
+      emailNotifications:
+        localStorage.getItem("emailNotifications") !== "false",
     });
 
-    // Load resume activity
     loadResumeActivity();
   }, [email, navigate]);
 
+  /* ================= REPORTS ================= */
   const loadResumeActivity = async () => {
-    if (!email) return;
-    
     try {
       setReportsLoading(true);
       const result = await getReports(email);
-      if (result && result.status) {
-        const reportsData = result.reports || result.data || (Array.isArray(result) ? result : []);
-        setReports(Array.isArray(reportsData) ? reportsData : []);
-      } else if (result && Array.isArray(result)) {
+
+      if (result?.status && Array.isArray(result.reports)) {
+        setReports(result.reports);
+      } else if (Array.isArray(result)) {
         setReports(result);
+      } else {
+        setReports([]);
       }
     } catch (err) {
       console.error("Error loading reports:", err);
+      setReports([]);
     } finally {
       setReportsLoading(false);
     }
   };
 
+  /* ================= HELPERS ================= */
   const getInitials = (name) => {
     if (!name) return "U";
     const parts = name.split(" ");
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+    return parts.length >= 2
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : name.substring(0, 2).toUpperCase();
   };
 
   const validateForm = () => {
@@ -78,11 +89,14 @@ export default function Profile() {
 
     if (!formData.displayName.trim()) {
       newErrors.displayName = "Display name is required";
-    } else if (formData.displayName.trim().length < 2) {
+    } else if (formData.displayName.length < 2) {
       newErrors.displayName = "Display name must be at least 2 characters";
     }
 
-    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+    if (
+      formData.phone &&
+      !/^[\d\s\-\+\(\)]+$/.test(formData.phone)
+    ) {
       newErrors.phone = "Please enter a valid phone number";
     }
 
@@ -92,28 +106,28 @@ export default function Profile() {
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
+  /* ================= SAVE ================= */
   const handleSave = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setSaving(true);
     setSuccessMessage("");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((res) => setTimeout(res, 800));
 
-      // Save preferences to localStorage
-      localStorage.setItem("theme", formData.theme);
-      localStorage.setItem("emailNotifications", formData.emailNotifications.toString());
       localStorage.setItem("displayName", formData.displayName);
+      localStorage.setItem("theme", formData.theme);
+      localStorage.setItem(
+        "emailNotifications",
+        formData.emailNotifications.toString()
+      );
+
       if (formData.phone) {
         localStorage.setItem("phone", formData.phone);
       }
@@ -121,63 +135,58 @@ export default function Profile() {
       setSuccessMessage("Profile updated successfully!");
       setIsEditing(false);
 
-      // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrors({ submit: "Failed to update profile. Please try again." });
+    } catch {
+      setErrors({ submit: "Failed to update profile." });
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    // Reset form to original values
-    const username = email.split("@")[0];
+    const fallbackName = email.split("@")[0];
+
     setFormData({
-      displayName: localStorage.getItem("displayName") || username.charAt(0).toUpperCase() + username.slice(1),
-      email: email,
+      displayName:
+        localStorage.getItem("displayName") ||
+        fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1),
+      email,
       phone: localStorage.getItem("phone") || "",
       theme: localStorage.getItem("theme") || "light",
-      emailNotifications: localStorage.getItem("emailNotifications") !== "false",
+      emailNotifications:
+        localStorage.getItem("emailNotifications") !== "false",
     });
+
     setErrors({});
     setIsEditing(false);
     setSuccessMessage("");
   };
 
   const handleChangePassword = () => {
-    // Navigate to change password modal or page
-    // TODO: Implement change password functionality
     setError("Change password feature coming soon!");
     setTimeout(() => setError(""), 3000);
   };
 
   const getLastLoginDate = () => {
     const lastLogin = localStorage.getItem("lastLogin");
-    if (lastLogin) {
-      return new Date(lastLogin).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    }
-    return "Today";
+    return lastLogin
+      ? new Date(lastLogin).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "Today";
   };
 
-  const getLastAnalysisDate = () => {
-    if (reports.length === 0) return "Never";
-    // Assuming reports have a date field - adjust based on your API
-    return "Recently";
-  };
+  const getLastAnalysisDate = () =>
+    reports.length === 0 ? "Never" : "Recently";
 
-  if (!email) {
-    return null;
-  }
+  if (!email) return null;
 
-  const displayName = formData.displayName || email.split("@")[0];
+  const displayName = formData.displayName;
   const totalResumes = reports.length;
 
-  return (
+   return (
     <div className="profile-page">
       {/* Profile Header */}
       <div className="profile-header">
