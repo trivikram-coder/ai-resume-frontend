@@ -54,7 +54,7 @@ export default function Auth() {
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
-    } catch (err) {
+    } catch {
       setLoginError("Unable to login. Please try again.");
     } finally {
       setLoginLoading(false);
@@ -89,7 +89,7 @@ export default function Auth() {
         setActiveTab("login");
         navigate("/");
       }, 2000);
-    } catch (err) {
+    } catch {
       setRegisterError("Something went wrong. Try again.");
     } finally {
       setRegisterLoading(false);
@@ -97,11 +97,11 @@ export default function Auth() {
   };
 
   return (
-    <section className="panel auth-panel">
+    <section className="panel auth-panel container-fluid py-4">
       {/* Tab Switcher */}
-      <div className="auth-tabs">
+      <div className="auth-tabs nav nav-pills mb-4">
         <button
-          className={`auth-tab ${
+          className={`auth-tab nav-link ${
             activeTab === "login" ? "auth-tab--active" : ""
           }`}
           onClick={() => {
@@ -112,7 +112,7 @@ export default function Auth() {
           🔐 Sign In
         </button>
         <button
-          className={`auth-tab ${
+          className={`auth-tab nav-link ${
             activeTab === "register" ? "auth-tab--active" : ""
           }`}
           onClick={() => {
@@ -126,8 +126,8 @@ export default function Auth() {
 
       {/* Login Form */}
       {activeTab === "login" && (
-        <div className="auth-form-container">
-          <div className="panel-header">
+        <div className="auth-form-container card shadow-sm border-0">
+          <div className="panel-header card-body pb-0">
             <p className="pill">Welcome back</p>
             <h1 className="panel-title">Sign in to your workspace</h1>
             <p className="panel-subtitle">
@@ -136,12 +136,12 @@ export default function Auth() {
             </p>
           </div>
 
-          <form onSubmit={handleLogin}>
-            <div className="grid-2">
-              <div className="input-group">
+          <form onSubmit={handleLogin} className="card-body pt-3">
+            <div className="grid-2 row g-3">
+              <div className="input-group col-md-6">
                 <label className="input-label">Work email</label>
                 <input
-                  className="input-control"
+                  className="input-control form-control"
                   type="email"
                   placeholder="you@company.com"
                   value={loginForm.email}
@@ -154,10 +154,10 @@ export default function Auth() {
                   required
                 />
               </div>
-              <div className="input-group">
+              <div className="input-group col-md-6">
                 <label className="input-label">Password</label>
                 <input
-                  className="input-control"
+                  className="input-control form-control"
                   type="password"
                   placeholder="••••••••"
                   value={loginForm.password}
@@ -172,22 +172,22 @@ export default function Auth() {
               </div>
             </div>
 
-            <div className="actions">
+            <div className="actions d-flex flex-column gap-2 mt-3">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary w-100"
                 type="submit"
                 disabled={loginLoading}
               >
                 {loginLoading ? "Signing in..." : "Sign in"}
               </button>
-              <p className="muted">
+              <p className="muted small text-secondary mb-0">
                 Secure login to keep your resume data private.
               </p>
             </div>
 
-            {loginMessage && <div className="message">{loginMessage}</div>}
+            {loginMessage && <div className="message alert alert-success mt-3 py-2">{loginMessage}</div>}
             {loginError && (
-              <div className="message error">{loginError}</div>
+              <div className="message error alert alert-danger mt-3 py-2">{loginError}</div>
             )}
           </form>
         </div>
@@ -195,8 +195,8 @@ export default function Auth() {
 
       {/* Register Form */}
       {activeTab === "register" && (
-        <div className="auth-form-container">
-          <div className="panel-header">
+        <div className="auth-form-container card shadow-sm border-0">
+          <div className="panel-header card-body pb-0">
             <p className="pill">Join the waitlist</p>
             <h1 className="panel-title">Create your account</h1>
             <p className="panel-subtitle">
@@ -206,11 +206,11 @@ export default function Auth() {
           </div>
 
           <form onSubmit={handleRegister}>
-            <div className="grid-2">
-              <div className="input-group">
+            <div className="grid-2 row g-3">
+              <div className="input-group col-md-6">
                 <label className="input-label">Full name</label>
                 <input
-                  className="input-control"
+                  className="input-control form-control"
                   type="text"
                   placeholder="Taylor Jackson"
                   value={registerForm.userName}
@@ -223,10 +223,10 @@ export default function Auth() {
                   required
                 />
               </div>
-              <div className="input-group">
+              <div className="input-group col-md-6">
                 <label className="input-label">Work email</label>
                 <input
-                  className="input-control"
+                  className="input-control form-control"
                   type="email"
                   placeholder="taylor@company.com"
                   value={registerForm.email}
@@ -239,10 +239,10 @@ export default function Auth() {
                   required
                 />
               </div>
-              <div className="input-group">
+              <div className="input-group col-md-6">
                 <label className="input-label">Password</label>
                 <input
-                  className="input-control"
+                  className="input-control form-control"
                   type="password"
                   placeholder="••••••••"
                   value={registerForm.password}
@@ -257,9 +257,9 @@ export default function Auth() {
               </div>
             </div>
 
-            <div className="actions">
+            <div className="actions d-flex flex-column gap-2 mt-3">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary w-100"
                 type="submit"
                 disabled={registerLoading}
               >
@@ -267,16 +267,16 @@ export default function Auth() {
                   ? "Creating account..."
                   : "Create account"}
               </button>
-              <p className="muted">
+              <p className="muted small text-secondary mb-0">
                 Get AI-powered resume insights instantly.
               </p>
             </div>
 
             {registerMessage && (
-              <div className="message">{registerMessage}</div>
+              <div className="message alert alert-success mt-3 py-2">{registerMessage}</div>
             )}
             {registerError && (
-              <div className="message error">{registerError}</div>
+              <div className="message error alert alert-danger mt-3 py-2">{registerError}</div>
             )}
           </form>
         </div>

@@ -1,11 +1,8 @@
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
-  const location = useLocation();
   const email = localStorage.getItem("email");
-  const isAuthPage = location.pathname === "/" || location.pathname === "/register";
-
   // Main navigation items (always visible)
   const mainMenuItems = [
     { to: "/dashboard", label: "Dashboard", icon: "📊" },
@@ -29,8 +26,8 @@ export default function Sidebar() {
   const allMenuItems = [...mainMenuItems, ...userMenuItems, ...authMenuItem];
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
+    <aside className="sidebar d-flex flex-column">
+      <div className="sidebar-header py-4">
         <div className="sidebar-logo">
           <div className="logo-icon">✨</div>
           <div className="logo-text">
@@ -40,13 +37,13 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav nav flex-column gap-2">
         {allMenuItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `sidebar-item ${isActive ? "sidebar-item--active" : ""}`
+              `sidebar-item nav-link ${isActive ? "sidebar-item--active active" : ""}`
             }
           >
             <span className="sidebar-icon">{item.icon}</span>

@@ -86,7 +86,7 @@ export default function Settings() {
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
+    } catch {
       setErrorMessage("Failed to save settings. Please try again.");
     } finally {
       setSaving(false);
@@ -132,7 +132,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="settings-page">
+    <div className="settings-page container-fluid py-3">
       {/* Page Header */}
       <div className="settings-header">
         <div className="settings-header-content">
