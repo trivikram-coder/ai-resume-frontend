@@ -15,8 +15,8 @@ export default function TopBar() {
   }
 
   return (
-    <header className="topbar">
-      <div className="topbar-content">
+    <header className="topbar sticky-top">
+      <div className="topbar-content d-flex justify-content-end align-items-center gap-2">
         {email ? (
           <UserProfileMenu />
         ) : (

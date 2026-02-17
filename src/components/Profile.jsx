@@ -95,7 +95,7 @@ export default function Profile() {
 
     if (
       formData.phone &&
-      !/^[\d\s\-\+\(\)]+$/.test(formData.phone)
+      !/^[\d\s\-+()]+$/.test(formData.phone)
     ) {
       newErrors.phone = "Please enter a valid phone number";
     }
@@ -187,7 +187,7 @@ export default function Profile() {
   const totalResumes = reports.length;
 
    return (
-    <div className="profile-page">
+    <div className="profile-page container-fluid py-3">
       {/* Profile Header */}
       <div className="profile-header">
         <div className="profile-header-content">

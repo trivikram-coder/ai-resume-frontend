@@ -17,11 +17,6 @@ export default function UploadResume() {
   // File validation
   const validateFile = (file) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
     const allowedExtensions = [".pdf", ".doc", ".docx"];
 
     if (!file) return { valid: false, error: "Please select a file." };
@@ -162,7 +157,7 @@ export default function UploadResume() {
         setError(result.message || "Upload failed. Please try again.");
         setUploadProgress(0);
       }
-    } catch (err) {
+    } catch {
       setError("Unable to upload right now. Please check your connection and try again.");
       setUploadProgress(0);
     } finally {
@@ -171,10 +166,10 @@ export default function UploadResume() {
   };
 
   return (
-    <div className="upload-page">
+    <div className="upload-page container-fluid py-3">
       {/* Page Header */}
-      <div className="upload-header">
-        <div className="upload-header-content">
+      <div className="upload-header mb-3">
+        <div className="upload-header-content text-center">
           <div className="upload-badge">✨ AI-powered analysis</div>
           <h1 className="upload-title">Upload your resume</h1>
           <p className="upload-subtitle">
@@ -184,10 +179,10 @@ export default function UploadResume() {
       </div>
 
       {/* Upload Card */}
-      <div className="upload-card">
+      <div className="upload-card card shadow-lg border-0">
         {/* Drag and Drop Zone */}
         <div
-          className={`upload-zone ${isDragging ? "upload-zone--dragging" : ""} ${
+          className={`upload-zone border rounded-4 p-4 bg-light-subtle ${isDragging ? "upload-zone--dragging border-primary" : ""} ${
             file ? "upload-zone--has-file" : ""
           }`}
           onDragEnter={handleDragEnter}
@@ -253,12 +248,12 @@ export default function UploadResume() {
         )}
 
         {/* Role/Job Target Input */}
-        <div className="upload-form-section">
+        <div className="upload-form-section mt-4">
           <label className="upload-label">
             Target role or job description <span style={{color:"red"}}>(*)</span>
           </label>
           <textarea
-            className="upload-textarea"
+            className="upload-textarea form-control"
             placeholder="e.g., Senior Product Manager at a B2B SaaS company. Focus on roadmap ownership, stakeholder management, and data-driven decision making."
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
@@ -273,7 +268,7 @@ export default function UploadResume() {
 
         {/* CTA Button */}
         <button
-          className="btn btn-primary btn-upload"
+          className="btn btn-primary btn-upload w-100 py-2"
           onClick={handleUpload}
           disabled={!file || loading}
           aria-label="Analyze resume"
@@ -292,16 +287,16 @@ export default function UploadResume() {
         </button>
 
         {/* Trust Elements */}
-        <div className="upload-trust-section">
-          <div className="upload-trust-item">
+        <div className="upload-trust-section row g-2 mt-3">
+          <div className="upload-trust-item col-md-4 d-flex align-items-center gap-2">
             <span className="upload-trust-icon">🔒</span>
             <span className="upload-trust-text">Your resume is encrypted and never shared</span>
           </div>
-          <div className="upload-trust-item">
+          <div className="upload-trust-item col-md-4 d-flex align-items-center gap-2">
             <span className="upload-trust-icon">✅</span>
             <span className="upload-trust-text">ATS-friendly analysis</span>
           </div>
-          <div className="upload-trust-item">
+          <div className="upload-trust-item col-md-4 d-flex align-items-center gap-2">
             <span className="upload-trust-icon">⚡</span>
             <span className="upload-trust-text">Results in ~10 seconds</span>
           </div>
@@ -309,13 +304,13 @@ export default function UploadResume() {
 
         {/* Messages */}
         {message && (
-          <div className="message upload-success">
+          <div className="message upload-success alert alert-success mt-3">
             <span className="message-icon">✓</span>
             {message}
           </div>
         )}
         {error && (
-          <div className="message error upload-error">
+          <div className="message error upload-error alert alert-danger mt-3">
             <span className="message-icon">⚠</span>
             {error}
           </div>
