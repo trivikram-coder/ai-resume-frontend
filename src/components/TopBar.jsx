@@ -6,29 +6,28 @@ export default function TopBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = localStorage.getItem("email");
-  
-  // Don't show topbar on auth pages
-  const isAuthPage = location.pathname === "/" || location.pathname === "/register";
-  
-  if (isAuthPage) {
-    return null;
-  }
+
+  const isAuthPage =
+    location.pathname === "/" || location.pathname === "/register";
+
+  if (isAuthPage) return null;
 
   return (
-    <header className="topbar sticky-top">
-      <div className="topbar-content d-flex justify-content-end align-items-center gap-2">
+    <nav className="navbar navbar-expand bg-white shadow-sm sticky-top px-4">
+      <div className="container-fluid d-flex justify-content-end align-items-center">
+
         {email ? (
           <UserProfileMenu />
         ) : (
-          <button 
-            className="btn btn-primary btn-auth"
+          <button
+            className="btn btn-primary"
             onClick={() => navigate("/")}
           >
             🔐 Login / Register
           </button>
         )}
+
       </div>
-    </header>
+    </nav>
   );
 }
-

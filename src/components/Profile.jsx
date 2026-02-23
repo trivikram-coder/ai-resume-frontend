@@ -26,7 +26,6 @@ export default function Profile() {
 
   const [errors, setErrors] = useState({});
 
-  /* ================= INIT ================= */
   useEffect(() => {
     if (!email) {
       navigate("/");
@@ -54,28 +53,17 @@ export default function Profile() {
     loadResumeActivity();
   }, [email, navigate]);
 
-  /* ================= REPORTS ================= */
   const loadResumeActivity = async () => {
     try {
-      setReportsLoading(true);
       const result = await getReports(email);
-
-      if (result?.status && Array.isArray(result.reports)) {
-        setReports(result.reports);
-      } else if (Array.isArray(result)) {
-        setReports(result);
-      } else {
-        setReports([]);
-      }
-    } catch (err) {
-      console.error("Error loading reports:", err);
+      setReports(result?.reports || result || []);
+    } catch {
       setReports([]);
     } finally {
       setReportsLoading(false);
     }
   };
 
-  /* ================= HELPERS ================= */
   const getInitials = (name) => {
     if (!name) return "U";
     const parts = name.split(" ");
@@ -86,361 +74,181 @@ export default function Profile() {
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.displayName.trim()) {
       newErrors.displayName = "Display name is required";
-    } else if (formData.displayName.length < 2) {
-      newErrors.displayName = "Display name must be at least 2 characters";
     }
-
-    if (
-      formData.phone &&
-      !/^[\d\s\-+()]+$/.test(formData.phone)
-    ) {
-      newErrors.phone = "Please enter a valid phone number";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  /* ================= SAVE ================= */
   const handleSave = async () => {
     if (!validateForm()) return;
 
     setSaving(true);
-    setSuccessMessage("");
+    await new Promise((res) => setTimeout(res, 600));
 
-    try {
-      await new Promise((res) => setTimeout(res, 800));
+    localStorage.setItem("displayName", formData.displayName);
+    localStorage.setItem("theme", formData.theme);
+    localStorage.setItem(
+      "emailNotifications",
+      formData.emailNotifications.toString()
+    );
 
-      localStorage.setItem("displayName", formData.displayName);
-      localStorage.setItem("theme", formData.theme);
-      localStorage.setItem(
-        "emailNotifications",
-        formData.emailNotifications.toString()
-      );
-
-      if (formData.phone) {
-        localStorage.setItem("phone", formData.phone);
-      }
-
-      setSuccessMessage("Profile updated successfully!");
-      setIsEditing(false);
-
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch {
-      setErrors({ submit: "Failed to update profile." });
-    } finally {
-      setSaving(false);
+    if (formData.phone) {
+      localStorage.setItem("phone", formData.phone);
     }
-  };
 
-  const handleCancel = () => {
-    const fallbackName = email.split("@")[0];
-
-    setFormData({
-      displayName:
-        localStorage.getItem("displayName") ||
-        fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1),
-      email,
-      phone: localStorage.getItem("phone") || "",
-      theme: localStorage.getItem("theme") || "light",
-      emailNotifications:
-        localStorage.getItem("emailNotifications") !== "false",
-    });
-
-    setErrors({});
+    setSaving(false);
     setIsEditing(false);
-    setSuccessMessage("");
+    setSuccessMessage("Profile updated successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
   };
-
-  const handleChangePassword = () => {
-    setError("Change password feature coming soon!");
-    setTimeout(() => setError(""), 3000);
-  };
-
-  const getLastLoginDate = () => {
-    const lastLogin = localStorage.getItem("lastLogin");
-    return lastLogin
-      ? new Date(lastLogin).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "Today";
-  };
-
-  const getLastAnalysisDate = () =>
-    reports.length === 0 ? "Never" : "Recently";
 
   if (!email) return null;
 
-  const displayName = formData.displayName;
   const totalResumes = reports.length;
 
-   return (
-    <div className="profile-page container-fluid py-3">
-      {/* Profile Header */}
-      <div className="profile-header">
-        <div className="profile-header-content">
-          <div className="profile-avatar-large">
-            <span className="profile-initials-large">{getInitials(displayName)}</span>
-          </div>
-          <div className="profile-header-info">
-            <div className="profile-header-top">
-              <h1 className="profile-name">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    className="profile-name-input"
-                    value={formData.displayName}
-                    onChange={(e) => handleInputChange("displayName", e.target.value)}
-                    placeholder="Display Name"
-                  />
-                ) : (
-                  displayName
-                )}
-              </h1>
-              <span className="profile-status-badge">Active</span>
+  return (
+    <div className="container py-5">
+
+      {/* Header */}
+      <div className="card shadow-sm mb-4">
+        <div className="card-body d-flex justify-content-between align-items-center flex-wrap">
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+              style={{ width: 70, height: 70, fontSize: 22 }}
+            >
+              {getInitials(formData.displayName)}
             </div>
-            <p className="profile-email">{email}</p>
-            {errors.displayName && (
-              <p className="profile-error-text">{errors.displayName}</p>
-            )}
+
+            <div>
+              {isEditing ? (
+                <input
+                  className="form-control"
+                  value={formData.displayName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, displayName: e.target.value })
+                  }
+                />
+              ) : (
+                <h4 className="fw-bold mb-1">{formData.displayName}</h4>
+              )}
+              <p className="text-muted mb-0">{email}</p>
+            </div>
           </div>
-        </div>
-        <div className="profile-header-actions">
-          {isEditing ? (
-            <div className="profile-edit-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={handleCancel}
-                disabled={saving}
-              >
-                Cancel
-              </button>
+
+          <div>
+            {isEditing ? (
+              <>
+                <button
+                  className="btn btn-outline-secondary me-2"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : "Save"}
+                </button>
+              </>
+            ) : (
               <button
                 className="btn btn-primary"
-                onClick={handleSave}
-                disabled={saving}
+                onClick={() => setIsEditing(true)}
               >
-                {saving ? "Saving..." : "Save Changes"}
+                Edit Profile
               </button>
-            </div>
-          ) : (
-            <button
-              className="btn btn-primary"
-              onClick={() => setIsEditing(true)}
-            >
-              ✏️ Edit Profile
-            </button>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
       {successMessage && (
-        <div className="message profile-success">{successMessage}</div>
+        <div className="alert alert-success">{successMessage}</div>
       )}
 
-      {error && (
-        <div className="message error">{error}</div>
-      )}
+      {error && <div className="alert alert-danger">{error}</div>}
 
-      {errors.submit && (
-        <div className="message error">{errors.submit}</div>
-      )}
+      {/* Sections */}
+      <div className="row g-4">
 
-      {/* Profile Sections */}
-      <div className="profile-sections">
-        {/* Personal Information */}
-        <div className="profile-section-card">
-          <div className="profile-section-header">
-            <h2 className="profile-section-title">
-              <span className="profile-section-icon">👤</span>
-              Personal Information
-            </h2>
-          </div>
-          <div className="profile-section-content">
-            <div className="profile-field">
-              <label className="profile-field-label">Display Name</label>
-              {isEditing ? (
-                <>
+        {/* Personal Info */}
+        <div className="col-md-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <h6 className="fw-bold mb-3">Personal Information</h6>
+
+              <div className="mb-3">
+                <label className="form-label">Phone</label>
+                {isEditing ? (
                   <input
-                    type="text"
-                    className="profile-field-input"
-                    value={formData.displayName}
-                    onChange={(e) => handleInputChange("displayName", e.target.value)}
-                    placeholder="Enter your display name"
-                  />
-                  {errors.displayName && (
-                    <span className="profile-field-error">{errors.displayName}</span>
-                  )}
-                </>
-              ) : (
-                <p className="profile-field-value">{formData.displayName}</p>
-              )}
-            </div>
-
-            <div className="profile-field">
-              <label className="profile-field-label">Email</label>
-              <p className="profile-field-value profile-field-value--readonly">
-                {formData.email}
-              </p>
-              <span className="profile-field-hint">Email cannot be changed</span>
-            </div>
-
-            <div className="profile-field">
-              <label className="profile-field-label">Phone Number (Optional)</label>
-              {isEditing ? (
-                <>
-                  <input
-                    type="tel"
-                    className="profile-field-input"
+                    className="form-control"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                  />
-                  {errors.phone && (
-                    <span className="profile-field-error">{errors.phone}</span>
-                  )}
-                </>
-              ) : (
-                <p className="profile-field-value">
-                  {formData.phone || "Not provided"}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Account Preferences */}
-        <div className="profile-section-card">
-          <div className="profile-section-header">
-            <h2 className="profile-section-title">
-              <span className="profile-section-icon">⚙️</span>
-              Account Preferences
-            </h2>
-          </div>
-          <div className="profile-section-content">
-            <div className="profile-field">
-              <label className="profile-field-label">Theme</label>
-              {isEditing ? (
-                <select
-                  className="profile-field-select"
-                  value={formData.theme}
-                  onChange={(e) => handleInputChange("theme", e.target.value)}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="system">System</option>
-                </select>
-              ) : (
-                <p className="profile-field-value">
-                  {formData.theme.charAt(0).toUpperCase() + formData.theme.slice(1)}
-                </p>
-              )}
-            </div>
-
-            <div className="profile-field">
-              <label className="profile-field-label">Email Notifications</label>
-              {isEditing ? (
-                <label className="profile-toggle">
-                  <input
-                    type="checkbox"
-                    checked={formData.emailNotifications}
                     onChange={(e) =>
-                      handleInputChange("emailNotifications", e.target.checked)
+                      setFormData({ ...formData, phone: e.target.value })
                     }
-                    className="profile-toggle-input"
                   />
-                  <span className="profile-toggle-slider"></span>
-                  <span className="profile-toggle-label">
-                    {formData.emailNotifications ? "Enabled" : "Disabled"}
-                  </span>
-                </label>
-              ) : (
-                <p className="profile-field-value">
-                  {formData.emailNotifications ? "Enabled" : "Disabled"}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Security */}
-        <div className="profile-section-card">
-          <div className="profile-section-header">
-            <h2 className="profile-section-title">
-              <span className="profile-section-icon">🔒</span>
-              Security
-            </h2>
-          </div>
-          <div className="profile-section-content">
-            <div className="profile-field">
-              <label className="profile-field-label">Password</label>
-              <div className="profile-field-action">
-                <p className="profile-field-value">••••••••</p>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleChangePassword}
-                >
-                  Change Password
-                </button>
+                ) : (
+                  <p className="text-muted">
+                    {formData.phone || "Not provided"}
+                  </p>
+                )}
               </div>
-            </div>
 
-            <div className="profile-field">
-              <label className="profile-field-label">Last Login</label>
-              <p className="profile-field-value">{getLastLoginDate()}</p>
+              <div>
+                <label className="form-label">Theme</label>
+                {isEditing ? (
+                  <select
+                    className="form-select"
+                    value={formData.theme}
+                    onChange={(e) =>
+                      setFormData({ ...formData, theme: e.target.value })
+                    }
+                  >
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                ) : (
+                  <p className="text-muted text-capitalize">
+                    {formData.theme}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Resume Activity */}
-        <div className="profile-section-card">
-          <div className="profile-section-header">
-            <h2 className="profile-section-title">
-              <span className="profile-section-icon">📊</span>
-              Resume Activity
-            </h2>
-          </div>
-          <div className="profile-section-content">
-            <div className="profile-field">
-              <label className="profile-field-label">Total Resumes Uploaded</label>
+        <div className="col-md-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <h6 className="fw-bold mb-3">Resume Activity</h6>
+
               {reportsLoading ? (
-                <p className="profile-field-value">Loading...</p>
+                <p>Loading...</p>
               ) : (
-                <p className="profile-field-value profile-field-value--highlight">
-                  {totalResumes}
-                </p>
+                <>
+                  <h4 className="fw-bold">{totalResumes}</h4>
+                  <p className="text-muted">Total Reports Generated</p>
+
+                  {totalResumes > 0 && (
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => navigate("/reports")}
+                    >
+                      View Reports
+                    </button>
+                  )}
+                </>
               )}
             </div>
-
-            <div className="profile-field">
-              <label className="profile-field-label">Last Analysis Date</label>
-              <p className="profile-field-value">{getLastAnalysisDate()}</p>
-            </div>
-
-            {totalResumes > 0 && (
-              <div className="profile-field">
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => navigate("/reports")}
-                >
-                  View All Reports →
-                </button>
-              </div>
-            )}
           </div>
         </div>
+
       </div>
     </div>
   );

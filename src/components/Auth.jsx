@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getUser, loginUser, registerUser } from "../api/api";
 
 export default function Auth() {
@@ -27,7 +27,6 @@ export default function Auth() {
   const [registerError, setRegisterError] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
 
-  /* ================= LOGIN ================= */
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError("");
@@ -42,10 +41,9 @@ export default function Auth() {
         return;
       }
 
-      // fetch user by email (NO JWT)
       const res = await getUser(loginForm.email);
       const data = await res.json();
-      console.log(data)
+
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("email", loginForm.email);
 
@@ -61,7 +59,6 @@ export default function Auth() {
     }
   };
 
-  /* ================= REGISTER ================= */
   const handleRegister = async (e) => {
     e.preventDefault();
     setRegisterError("");
@@ -78,7 +75,6 @@ export default function Auth() {
 
       setRegisterMessage("Account created! You can now login.");
 
-      // clear form (FIXED)
       setRegisterForm({
         userName: "",
         email: "",
@@ -97,190 +93,196 @@ export default function Auth() {
   };
 
   return (
-    <section className="panel auth-panel container-fluid py-4">
-      {/* Tab Switcher */}
-      <div className="auth-tabs nav nav-pills mb-4">
-        <button
-          className={`auth-tab nav-link ${
-            activeTab === "login" ? "auth-tab--active" : ""
-          }`}
-          onClick={() => {
-            setActiveTab("login");
-            navigate("/");
-          }}
-        >
-          🔐 Sign In
-        </button>
-        <button
-          className={`auth-tab nav-link ${
-            activeTab === "register" ? "auth-tab--active" : ""
-          }`}
-          onClick={() => {
-            setActiveTab("register");
-            navigate("/register");
-          }}
-        >
-          👤 Sign Up
-        </button>
+    <div className="container py-5">
+      <div className="row justify-content-center">
+        <div className="col-lg-6 col-md-8">
+
+          {/* Tabs */}
+          <ul className="nav nav-pills nav-justified mb-4">
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "login" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("login");
+                  navigate("/");
+                }}
+              >
+                🔐 Sign In
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "register" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("register");
+                  navigate("/register");
+                }}
+              >
+                👤 Sign Up
+              </button>
+            </li>
+          </ul>
+
+          {/* LOGIN */}
+          {activeTab === "login" && (
+            <div className="card shadow border-0">
+              <div className="card-body">
+                <h3 className="fw-bold mb-2">Sign in to your workspace</h3>
+                <p className="text-muted mb-4">
+                  Continue optimizing resumes and tracking reports.
+                </p>
+
+                <form onSubmit={handleLogin}>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label">Work email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        placeholder="you@company.com"
+                        value={loginForm.email}
+                        onChange={(e) =>
+                          setLoginForm({
+                            ...loginForm,
+                            email: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">Password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        placeholder="••••••••"
+                        value={loginForm.password}
+                        onChange={(e) =>
+                          setLoginForm({
+                            ...loginForm,
+                            password: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    className="btn btn-primary w-100 mt-4"
+                    type="submit"
+                    disabled={loginLoading}
+                  >
+                    {loginLoading ? "Signing in..." : "Sign in"}
+                  </button>
+
+                  {loginMessage && (
+                    <div className="alert alert-success mt-3">
+                      {loginMessage}
+                    </div>
+                  )}
+
+                  {loginError && (
+                    <div className="alert alert-danger mt-3">
+                      {loginError}
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* REGISTER */}
+          {activeTab === "register" && (
+            <div className="card shadow border-0">
+              <div className="card-body">
+                <h3 className="fw-bold mb-2">Create your account</h3>
+                <p className="text-muted mb-4">
+                  Store resumes and analyze them with AI.
+                </p>
+
+                <form onSubmit={handleRegister}>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label">Full name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Taylor Jackson"
+                        value={registerForm.userName}
+                        onChange={(e) =>
+                          setRegisterForm({
+                            ...registerForm,
+                            userName: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">Work email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        placeholder="taylor@company.com"
+                        value={registerForm.email}
+                        onChange={(e) =>
+                          setRegisterForm({
+                            ...registerForm,
+                            email: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">Password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        placeholder="••••••••"
+                        value={registerForm.password}
+                        onChange={(e) =>
+                          setRegisterForm({
+                            ...registerForm,
+                            password: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    className="btn btn-primary w-100 mt-4"
+                    type="submit"
+                    disabled={registerLoading}
+                  >
+                    {registerLoading
+                      ? "Creating account..."
+                      : "Create account"}
+                  </button>
+
+                  {registerMessage && (
+                    <div className="alert alert-success mt-3">
+                      {registerMessage}
+                    </div>
+                  )}
+
+                  {registerError && (
+                    <div className="alert alert-danger mt-3">
+                      {registerError}
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Login Form */}
-      {activeTab === "login" && (
-        <div className="auth-form-container card shadow-sm border-0">
-          <div className="panel-header card-body pb-0">
-            <p className="pill">Welcome back</p>
-            <h1 className="panel-title">Sign in to your workspace</h1>
-            <p className="panel-subtitle">
-              Continue optimizing resumes, tracking reports, and sharing insights
-              with hiring managers.
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="card-body pt-3">
-            <div className="grid-2 row g-3">
-              <div className="input-group col-md-6">
-                <label className="input-label">Work email</label>
-                <input
-                  className="input-control form-control"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={loginForm.email}
-                  onChange={(e) =>
-                    setLoginForm({
-                      ...loginForm,
-                      email: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div className="input-group col-md-6">
-                <label className="input-label">Password</label>
-                <input
-                  className="input-control form-control"
-                  type="password"
-                  placeholder="••••••••"
-                  value={loginForm.password}
-                  onChange={(e) =>
-                    setLoginForm({
-                      ...loginForm,
-                      password: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="actions d-flex flex-column gap-2 mt-3">
-              <button
-                className="btn btn-primary w-100"
-                type="submit"
-                disabled={loginLoading}
-              >
-                {loginLoading ? "Signing in..." : "Sign in"}
-              </button>
-              <p className="muted small text-secondary mb-0">
-                Secure login to keep your resume data private.
-              </p>
-            </div>
-
-            {loginMessage && <div className="message alert alert-success mt-3 py-2">{loginMessage}</div>}
-            {loginError && (
-              <div className="message error alert alert-danger mt-3 py-2">{loginError}</div>
-            )}
-          </form>
-        </div>
-      )}
-
-      {/* Register Form */}
-      {activeTab === "register" && (
-        <div className="auth-form-container card shadow-sm border-0">
-          <div className="panel-header card-body pb-0">
-            <p className="pill">Join the waitlist</p>
-            <h1 className="panel-title">Create your account</h1>
-            <p className="panel-subtitle">
-              Store resumes, analyze them with AI, and download recruiter-ready
-              reports in seconds.
-            </p>
-          </div>
-
-          <form onSubmit={handleRegister}>
-            <div className="grid-2 row g-3">
-              <div className="input-group col-md-6">
-                <label className="input-label">Full name</label>
-                <input
-                  className="input-control form-control"
-                  type="text"
-                  placeholder="Taylor Jackson"
-                  value={registerForm.userName}
-                  onChange={(e) =>
-                    setRegisterForm({
-                      ...registerForm,
-                      userName: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div className="input-group col-md-6">
-                <label className="input-label">Work email</label>
-                <input
-                  className="input-control form-control"
-                  type="email"
-                  placeholder="taylor@company.com"
-                  value={registerForm.email}
-                  onChange={(e) =>
-                    setRegisterForm({
-                      ...registerForm,
-                      email: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div className="input-group col-md-6">
-                <label className="input-label">Password</label>
-                <input
-                  className="input-control form-control"
-                  type="password"
-                  placeholder="••••••••"
-                  value={registerForm.password}
-                  onChange={(e) =>
-                    setRegisterForm({
-                      ...registerForm,
-                      password: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="actions d-flex flex-column gap-2 mt-3">
-              <button
-                className="btn btn-primary w-100"
-                type="submit"
-                disabled={registerLoading}
-              >
-                {registerLoading
-                  ? "Creating account..."
-                  : "Create account"}
-              </button>
-              <p className="muted small text-secondary mb-0">
-                Get AI-powered resume insights instantly.
-              </p>
-            </div>
-
-            {registerMessage && (
-              <div className="message alert alert-success mt-3 py-2">{registerMessage}</div>
-            )}
-            {registerError && (
-              <div className="message error alert alert-danger mt-3 py-2">{registerError}</div>
-            )}
-          </form>
-        </div>
-      )}
-    </section>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ export default function UploadResume() {
   const navigate = useNavigate();
   const email = localStorage.getItem("email");
   const fileInputRef = useRef(null);
+
   const [file, setFile] = useState(null);
   const [desc, setDesc] = useState("");
   const [message, setMessage] = useState("");
@@ -14,34 +15,24 @@ export default function UploadResume() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  // File validation
   const validateFile = (file) => {
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedExtensions = [".pdf", ".doc", ".docx"];
+    const maxSize = 5 * 1024 * 1024;
+    const allowed = ["pdf", "doc", "docx"];
 
     if (!file) return { valid: false, error: "Please select a file." };
 
-    // Check file type
-    const fileExtension = "." + file.name.split(".").pop().toLowerCase();
-    if (!allowedExtensions.includes(fileExtension)) {
-      return {
-        valid: false,
-        error: "Invalid file type. Please upload a PDF or DOCX file.",
-      };
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!allowed.includes(ext)) {
+      return { valid: false, error: "Only PDF or DOCX allowed." };
     }
 
-    // Check file size
     if (file.size > maxSize) {
-      return {
-        valid: false,
-        error: "File size exceeds 5MB limit. Please upload a smaller file.",
-      };
+      return { valid: false, error: "File exceeds 5MB limit." };
     }
 
-    return { valid: true, error: null };
+    return { valid: true };
   };
 
-  // Handle file selection
   const handleFileSelect = useCallback((selectedFile) => {
     const validation = validateFile(selectedFile);
     if (!validation.valid) {
@@ -55,110 +46,46 @@ export default function UploadResume() {
     setMessage("");
   }, []);
 
-  // Drag and drop handlers
-  const handleDragEnter = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
-
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile) {
-        handleFileSelect(droppedFile);
-      }
-    },
-    [handleFileSelect]
-  );
-
-  // File input change handler
-  const handleFileInputChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      handleFileSelect(selectedFile);
-    }
-  };
-
-  // Remove file
-  const handleRemoveFile = () => {
-    setFile(null);
-    setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  // Format file size
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
-  };
-
-  // Upload handler
   const handleUpload = async () => {
     if (!file) {
-      setError("Please select a resume file to upload.");
+      setError("Please select a resume file.");
+      return;
+    }
+
+    if (!desc.trim()) {
+      setError("Please enter target role or job description.");
       return;
     }
 
     if (!email) {
-      setError("Please login to upload a resume.");
       navigate("/");
       return;
     }
 
-    setError("");
-    setMessage("");
     setLoading(true);
     setUploadProgress(0);
+    setError("");
+    setMessage("");
 
     try {
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => (prev < 90 ? prev + 10 : prev));
       }, 200);
 
       const result = await uploadResume(email, file, desc);
-      
-      clearInterval(progressInterval);
+
+      clearInterval(interval);
       setUploadProgress(100);
 
       if (result.status) {
-        setMessage(result.message || "Uploaded successfully! Analyzing your resume...");
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 2000);
+        setMessage("Resume uploaded successfully! Redirecting...");
+        setTimeout(() => navigate("/dashboard"), 2000);
       } else {
-        setError(result.message || "Upload failed. Please try again.");
+        setError(result.message || "Upload failed.");
         setUploadProgress(0);
       }
     } catch {
-      setError("Unable to upload right now. Please check your connection and try again.");
+      setError("Network error. Please try again.");
       setUploadProgress(0);
     } finally {
       setLoading(false);
@@ -166,154 +93,130 @@ export default function UploadResume() {
   };
 
   return (
-    <div className="upload-page container-fluid py-3">
-      {/* Page Header */}
-      <div className="upload-header mb-3">
-        <div className="upload-header-content text-center">
-          <div className="upload-badge">✨ AI-powered analysis</div>
-          <h1 className="upload-title">Upload your resume</h1>
-          <p className="upload-subtitle">
-            Get instant AI feedback optimized for ATS and recruiters
-          </p>
-        </div>
+    <div className="container py-5">
+
+      {/* Header */}
+      <div className="text-center mb-5">
+        <h2 className="fw-bold">Upload Your Resume</h2>
+        <p className="text-muted">
+          Get AI-powered ATS & recruiter feedback instantly
+        </p>
       </div>
 
-      {/* Upload Card */}
-      <div className="upload-card card shadow-lg border-0">
-        {/* Drag and Drop Zone */}
+      <div className="card shadow-sm border-0 p-4">
+
+        {/* Drag & Drop */}
         <div
-          className={`upload-zone border rounded-4 p-4 bg-light-subtle ${isDragging ? "upload-zone--dragging border-primary" : ""} ${
-            file ? "upload-zone--has-file" : ""
+          className={`border rounded-4 p-5 text-center bg-light ${
+            isDragging ? "border-primary bg-white" : ""
           }`}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => !file && fileInputRef.current?.click()}
+          style={{ cursor: "pointer" }}
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            const droppedFile = e.dataTransfer.files[0];
+            if (droppedFile) handleFileSelect(droppedFile);
+          }}
         >
           <input
-            ref={fileInputRef}
             type="file"
+            hidden
+            ref={fileInputRef}
             accept=".pdf,.doc,.docx"
-            onChange={handleFileInputChange}
-            className="upload-input-hidden"
-            aria-label="Upload resume file"
+            onChange={(e) =>
+              e.target.files && handleFileSelect(e.target.files[0])
+            }
           />
 
           {!file ? (
-            <div className="upload-zone-content">
-              <div className="upload-icon">📄</div>
-              <h3 className="upload-zone-title">Drag & drop your resume here</h3>
-              <p className="upload-zone-subtitle">or click to browse</p>
-              <div className="upload-zone-info">
-                <span className="upload-zone-badge">PDF</span>
-                <span className="upload-zone-badge">DOCX</span>
-                <span className="upload-zone-badge">Max 5MB</span>
-              </div>
-            </div>
+            <>
+              <div style={{ fontSize: 40 }}>📄</div>
+              <h5 className="mt-3">Drag & drop resume</h5>
+              <p className="text-muted small">
+                PDF or DOCX • Max 5MB
+              </p>
+            </>
           ) : (
-            <div className="upload-file-preview">
-              <div className="upload-file-icon">📄</div>
-              <div className="upload-file-info">
-                <div className="upload-file-name">{file.name}</div>
-                <div className="upload-file-size">{formatFileSize(file.size)}</div>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{file.name}</strong>
+                <div className="text-muted small">
+                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                </div>
               </div>
               <button
-                className="upload-file-remove"
+                className="btn btn-sm btn-outline-danger"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleRemoveFile();
+                  setFile(null);
                 }}
-                aria-label="Remove file"
               >
-                ✕
+                Remove
               </button>
             </div>
           )}
         </div>
 
-        {/* Upload Progress */}
-        {loading && uploadProgress > 0 && (
-          <div className="upload-progress-container">
-            <div className="upload-progress-bar">
+        {/* Progress */}
+        {loading && (
+          <div className="mt-4">
+            <div className="progress">
               <div
-                className="upload-progress-fill"
+                className="progress-bar progress-bar-striped progress-bar-animated"
                 style={{ width: `${uploadProgress}%` }}
-              ></div>
+              >
+                {uploadProgress}%
+              </div>
             </div>
-            <p className="upload-progress-text">
-              {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : "Processing..."}
-            </p>
           </div>
         )}
 
-        {/* Role/Job Target Input */}
-        <div className="upload-form-section mt-4">
-          <label className="upload-label">
-            Target role or job description <span style={{color:"red"}}>(*)</span>
+        {/* Description */}
+        <div className="mt-4">
+          <label className="form-label">
+            Target Role / Job Description *
           </label>
           <textarea
-            className="upload-textarea form-control"
-            placeholder="e.g., Senior Product Manager at a B2B SaaS company. Focus on roadmap ownership, stakeholder management, and data-driven decision making."
+            className="form-control"
+            rows="4"
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            rows={4}
             disabled={loading}
-            aria-label="Target role or job description"
+            placeholder="e.g. Backend Developer focusing on Spring Boot and Microservices..."
           />
-          <p className="upload-helper-text">
-            💡 Providing context helps our AI tailor analysis to your specific role and industry.
-          </p>
+          <div className="form-text">
+            Providing context improves AI analysis accuracy.
+          </div>
         </div>
 
-        {/* CTA Button */}
+        {/* CTA */}
         <button
-          className="btn btn-primary btn-upload w-100 py-2"
+          className="btn btn-primary w-100 mt-4"
           onClick={handleUpload}
-          disabled={!file || loading}
-          aria-label="Analyze resume"
+          disabled={loading || !file}
         >
-          {loading ? (
-            <>
-              <span className="upload-spinner"></span>
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <span>🚀</span>
-              Analyze Resume
-            </>
-          )}
+          {loading ? "Analyzing..." : "🚀 Analyze Resume"}
         </button>
 
-        {/* Trust Elements */}
-        <div className="upload-trust-section row g-2 mt-3">
-          <div className="upload-trust-item col-md-4 d-flex align-items-center gap-2">
-            <span className="upload-trust-icon">🔒</span>
-            <span className="upload-trust-text">Your resume is encrypted and never shared</span>
-          </div>
-          <div className="upload-trust-item col-md-4 d-flex align-items-center gap-2">
-            <span className="upload-trust-icon">✅</span>
-            <span className="upload-trust-text">ATS-friendly analysis</span>
-          </div>
-          <div className="upload-trust-item col-md-4 d-flex align-items-center gap-2">
-            <span className="upload-trust-icon">⚡</span>
-            <span className="upload-trust-text">Results in ~10 seconds</span>
-          </div>
+        {/* Trust Row */}
+        <div className="row text-center mt-4 small text-muted">
+          <div className="col-md-4">🔒 Encrypted & Secure</div>
+          <div className="col-md-4">✅ ATS Optimized</div>
+          <div className="col-md-4">⚡ Results in seconds</div>
         </div>
 
         {/* Messages */}
         {message && (
-          <div className="message upload-success alert alert-success mt-3">
-            <span className="message-icon">✓</span>
-            {message}
-          </div>
+          <div className="alert alert-success mt-4">{message}</div>
         )}
         {error && (
-          <div className="message error upload-error alert alert-danger mt-3">
-            <span className="message-icon">⚠</span>
-            {error}
-          </div>
+          <div className="alert alert-danger mt-4">{error}</div>
         )}
       </div>
     </div>

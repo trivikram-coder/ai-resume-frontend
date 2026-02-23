@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
-import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
+
+import MainLayout from "./components/MainLayout";
 import Auth from "./components/Auth";
 import UploadResume from "./components/UploadResume";
 import Dashboard from "./components/Dashboard";
 import Reports from "./components/Reports";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
+import ReportDetails from "./components/ReportDetails";
 
 /* ================= AUTH HELPERS ================= */
-const isLoggedIn = () => {
-  return Boolean(localStorage.getItem("email"));
-};
+
+const isLoggedIn = () => Boolean(localStorage.getItem("email"));
 
 const PublicRoute = ({ children }) => {
   return isLoggedIn() ? <Navigate to="/dashboard" replace /> : children;
@@ -25,78 +25,43 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
-      <div className="app-shell">
-        <Sidebar />
-        <div className="app-main-wrapper">
-          <TopBar />
-          <main className="main-content">
-            <Routes>
-              {/* Public */}
-              <Route
-                path="/"
-                element={
-                  <PublicRoute>
-                    <Auth />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <PublicRoute>
-                    <Auth />
-                  </PublicRoute>
-                }
-              />
+      <Routes>
 
-              {/* Protected */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/upload"
-                element={
-                  <ProtectedRoute>
-                    <UploadResume />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/reports"
-                element={
-                  <ProtectedRoute>
-                    <Reports />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
+        {/* Public Routes (No Layout) */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Auth />
+            </PublicRoute>
+          }
+        />
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
-      </div>
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Auth />
+            </PublicRoute>
+          }
+        />
+
+        {/* Protected Routes (With Layout) */}
+        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/upload" element={<UploadResume />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/report/:id" element={<ReportDetails />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+
+        </Route>
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
     </BrowserRouter>
   );
 }

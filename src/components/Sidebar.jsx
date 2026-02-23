@@ -1,16 +1,16 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   const email = localStorage.getItem("email");
-  // Main navigation items (always visible)
+
   const mainMenuItems = [
     { to: "/dashboard", label: "Dashboard", icon: "📊" },
     { to: "/upload", label: "Upload Resume", icon: "📄" },
     { to: "/reports", label: "Reports", icon: "📋" },
   ];
 
-  // User-specific items (only when logged in)
   const userMenuItems = email
     ? [
         { to: "/profile", label: "Profile", icon: "👤" },
@@ -18,7 +18,6 @@ export default function Sidebar() {
       ]
     : [];
 
-  // Auth item (only when not logged in)
   const authMenuItem = !email
     ? [{ to: "/", label: "Login / Register", icon: "🔐" }]
     : [];
@@ -26,39 +25,55 @@ export default function Sidebar() {
   const allMenuItems = [...mainMenuItems, ...userMenuItems, ...authMenuItem];
 
   return (
-    <aside className="sidebar d-flex flex-column">
-      <div className="sidebar-header py-4">
-        <div className="sidebar-logo">
-          <div className="logo-icon">✨</div>
-          <div className="logo-text">
-            <div className="logo-title">AI Resume</div>
-            <div className="logo-subtitle">Analyzer</div>
-          </div>
+    <div
+      className="d-flex flex-column flex-shrink-0 p-3 bg-white shadow-sm"
+      style={{ width: 260, minHeight: "100vh" }}
+    >
+      {/* Logo */}
+      <div
+        className="d-flex align-items-center mb-4 text-decoration-none"
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate("/dashboard")}
+      >
+        <span className="fs-4 me-2">✨</span>
+        <div>
+          <div className="fw-bold">AI Resume</div>
+          <small className="text-muted">Analyzer</small>
         </div>
       </div>
 
-      <nav className="sidebar-nav nav flex-column gap-2">
+      <hr />
+
+      {/* Navigation */}
+      <ul className="nav nav-pills flex-column mb-auto">
         {allMenuItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `sidebar-item nav-link ${isActive ? "sidebar-item--active active" : ""}`
-            }
-          >
-            <span className="sidebar-icon">{item.icon}</span>
-            <span className="sidebar-label">{item.label}</span>
-          </NavLink>
+          <li className="nav-item mb-1" key={item.to}>
+            <NavLink
+              to={item.to}
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center ${
+                  isActive ? "active" : "text-dark"
+                }`
+              }
+            >
+              <span className="me-2">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          </li>
         ))}
-      </nav>
+      </ul>
 
-      <div className="sidebar-footer">
-        <div className="sidebar-footer-content">
-          <p className="sidebar-footer-text">AI-powered insights</p>
-          <p className="sidebar-footer-subtext">Get hired faster</p>
-        </div>
+      <hr />
+
+      {/* Footer */}
+      <div className="text-center mt-auto">
+        <small className="text-muted d-block">
+          AI-powered insights
+        </small>
+        <small className="text-muted">
+          Get hired faster
+        </small>
       </div>
-    </aside>
+    </div>
   );
 }
-
