@@ -10,7 +10,7 @@ import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 
 /* ================= AUTH HELPERS ================= */
-const isLoggedIn = () => { 
+const isLoggedIn = () => {
   return Boolean(localStorage.getItem("email"));
 };
 
